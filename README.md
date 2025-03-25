@@ -1,3 +1,25 @@
+## Pasar de wsl 1 a wsl 2
+```bash
+# Verificar la version
+wsl --status
+
+## Si no habilitaste las caracteristicas habilitarlas:
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+
+# Descargar el paquete de actualización del kernel de WSL2: https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi una vez instalado hacer doble click
+
+# Establecer wsl2 como versión predeterminada:
+wsl --set-default-version 2
+
+# Convertir tu distribución existente a WSL2:
+# Primero, lista tus distribuciones
+wsl --list --verbose
+
+# Luego, convierte tu distribución (reemplaza 'Ubuntu' con el nombre de tu distribución)
+wsl --set-version Ubuntu 2
+```
+
 ## Instalación de Docker
 
 Instalación oficial de Docker Engine en WSL Ubuntu (Alternativa a Docker Desktop por el tema de Administrador, ya que puede dar problemas despues al hacer docker compose up -d con el Makefile):
@@ -194,62 +216,6 @@ make get-object    # Obtiene el archivo creado
 ```
 
 ❗ **Problema principal:** El problema principal que encontramos fue el timeout en la Lambda al intentar invocarla. Esto necesitará revisión con el profesor ya que podría estar relacionado con la configuración de red entre Docker/WSL2.
-
-⏱️ **Solución al error de timeout en Lambda:**
-
-Si encuentras este error al invocar la Lambda:
-```
-"errorMessage":"Task timed out after 10.00 seconds"
-```
-
-El problema se debe a dos factores:
-
-1. El endpoint de LocalStack no es accesible desde la Lambda
-2. El timeout configurado es muy corto para un entorno local
-
-Para solucionarlo, modificar el archivo `cdk/lambda_s3_local/lambda_s3_local_stack.py`:
-
-1. Cambiar el endpoint para usar la IP del contenedor de LocalStack:
-```python
-environment={
-    "BUCKET_NAME": bucket.bucket_name,
-    "LOCALSTACK_ENDPOINT": "http://172.19.0.2:4566"  # IP del contenedor LocalStack
-}
-```
-
-> **Nota**: La Lambda se ejecuta dentro de un contenedor y no puede acceder a localhost del host. Para obtener la IP correcta del contenedor LocalStack, usar el comando:
-> ```bash
-> docker inspect localstack | grep IPAddress
-> ```
->
-> **Explicación detallada de las IPs:**
-> 1. `localhost:4566` no funciona porque:
->    - "localhost" dentro de un contenedor se refiere al propio contenedor, no al host
->    - La Lambda se ejecuta en su propio contenedor, por lo que "localhost" apunta al contenedor de la Lambda, no a LocalStack
-> 
-> 2. `172.17.0.1:4566` (IP del puente Docker) no funciona porque:
->    - Esta es la IP del puente de red predeterminado de Docker
->    - LocalStack se ejecuta en una red personalizada `personal_local_aws_default`
->    - Esta red usa un rango de IPs diferente (172.19.0.x)
->
-> 3. `172.19.0.2:4566` funciona porque:
->    - Es la IP real del contenedor LocalStack en su red
->    - Los contenedores en la misma red Docker pueden comunicarse usando sus IPs internas
->    - Esta IP la obtenemos con el comando `docker inspect localstack`
-
-2. Aumentar el timeout de la Lambda:
-```python
-lambda_fn = _lambda.Function(
-    # ... otros parámetros ...
-    timeout=Duration.seconds(30),  # Aumentado de 10 a 30 segundos
-)
-```
-
-Después de hacer estos cambios, ejecutar:
-```bash
-make deploy    # Redespliega la Lambda con los cambios
-make invoke    # Prueba la Lambda nuevamente
-```
 
 
 ### Algunos comanods útiles para gestionar entornos virtuales:
