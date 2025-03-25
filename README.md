@@ -169,8 +169,6 @@ export AWS_DEFAULT_REGION=us-east-1
 ```bash
 # Iniciar LocalStack
 make start-localstack
-# o
-docker compose up -d
 
 # Detener LocalStack
 make localstack-stop
