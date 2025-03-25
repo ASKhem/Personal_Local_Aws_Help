@@ -249,3 +249,27 @@ pip list
 # Ver versión de Python
 python --version
 ```
+
+## Desinstalación y Reinstalación de Docker
+
+### 🗑️ Desinstalación completa de Docker:
+```bash
+# Detener servicios de Docker
+sudo service docker stop
+
+# Desinstalar todos los paquetes de Docker
+sudo apt-get remove -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Eliminar archivos de configuración restantes
+sudo rm -rf /var/lib/docker
+sudo rm -rf /etc/docker
+sudo rm -rf /etc/wsl.conf
+sudo rm -rf /etc/apt/keyrings/docker.gpg
+sudo rm -rf /etc/apt/sources.list.d/docker.list
+
+# Eliminar el grupo docker
+sudo groupdel docker
+
+# Limpiar paquetes que ya no se necesitan
+sudo apt-get autoremove -y
+sudo apt-get clean
