@@ -263,22 +263,38 @@ python --version
 
 ### 🗑️ Desinstalación completa de Docker:
 ```bash
-# Detener servicios de Docker
+# Detener servicios
 sudo service docker stop
 
-# Desinstalar todos los paquetes de Docker
-sudo apt-get remove -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# Matar cualquier proceso restante
+sudo killall -9 docker
+sudo killall -9 dockerd
 
-# Eliminar archivos de configuración restantes
+# Limpiar procesos zombie
+sudo rm -f /var/run/docker.pid
+sudo rm -f /var/run/docker-ssd.pid
+
+# Primero los plugins que no tienen dependencias
+sudo dpkg --remove --force-remove-reinstreq docker-buildx-plugin
+sudo dpkg --remove --force-remove-reinstreq docker-compose-plugin
+
+# Luego docker-ce que depende de los otros
+sudo dpkg --remove --force-all docker-ce
+
+# Después los componentes base
+sudo dpkg --remove --force-all docker-ce-cli
+sudo dpkg --remove --force-all containerd.io
+
+# Eliminar archivos residuales
 sudo rm -rf /var/lib/docker
 sudo rm -rf /etc/docker
 sudo rm -rf /etc/wsl.conf
 sudo rm -rf /etc/apt/keyrings/docker.gpg
 sudo rm -rf /etc/apt/sources.list.d/docker.list
+sudo rm -rf /var/run/docker*
 
-# Eliminar el grupo docker
-sudo groupdel docker
-
-# Limpiar paquetes que ya no se necesitan
+# Limpiar paquetes huérfanos
 sudo apt-get autoremove -y
-sudo apt-get clean
+sudo apt-get autoclean
+```
+
