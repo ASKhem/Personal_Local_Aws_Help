@@ -30,11 +30,16 @@ sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg
 ```
 
+Crear el grupo docker antes de la instalación
+```bash
+sudo groupadd --system docker
+```
+
 Añadir la clave GPG oficial de Docker:
 ```bash
-  sudo install -m 0755 -d /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-  sudo chmod a+r /etc/apt/keyrings/docker.gpg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 ```
 
 **🛠️ Configurar el repositorio:**
@@ -51,6 +56,11 @@ sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
+**👤 Añadir tu usuario al grupo docker para usar Docker sin sudo:**
+```bash
+sudo usermod -aG docker $USER
+```
+
 **🚀 Iniciar el servicio de Docker:**
 ```bash
 sudo service docker start
@@ -63,10 +73,9 @@ sudo tee /etc/wsl.conf << EOF
 command="service docker start"
 EOF
 ```
-
-**👤 Añadir tu usuario al grupo docker para usar Docker sin sudo:**
+** Recargar los grupos**
 ```bash
-sudo usermod -aG docker $USER
+newgrp docker
 ```
 
 **✅ Verificar la instalación:**
